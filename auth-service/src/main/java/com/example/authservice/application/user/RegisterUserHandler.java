@@ -24,8 +24,8 @@ public class RegisterUserHandler {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email já cadastrado");
         }
 
-        String hashedPassword = passwordHasher.hash(passwordRaw);
-        User user = new User(name, email, RoleType.CUSTOMER, hashedPassword);
+    String hashedPassword = passwordHasher.hash(passwordRaw);
+    User user = new User(name, email, RoleType.USER, hashedPassword);
         User savedUser = userRepository.save(user);
 
         return new UserResponse(

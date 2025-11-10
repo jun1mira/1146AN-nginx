@@ -1,119 +1,165 @@
-version: '3.0'
+version: '3.9'
 
 services:
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - app-network
+
   service-discovery:
     build:
       context: ./service-discovery
     container_name: service-discovery
     ports:
-     - "8080:8080"
-    volumes:
-     - ./service-discovery:/app
-     - ~/.m2:/root/.m2
+      - "8080:8080"
     networks:
-     - app-network
-  events-service:
-    build:
-      context: ./events-service
-    container_name: events-service
-    ports:
-     - "8081:8080"
-    volumes:
-      - ./events-service:/app
-      - ~/.m2:/root/.m2
-    depends_on:
-     - service-discovery
-    networks:
-     - app-network
-  guest-service:
-    build:
-      context: ./guest-service
-    container_name: guest-service
-    ports:
-     - "8082:8080"
-    volumes:
-     - ./guest-service:/app
-     - ~/.m2:/root/.m2
-    depends_on:
-     - service-discovery
-    networks:
-     - app-network
-  item-service:
-    build:
-      context: ./item-service
-    container_name: item-service
-    ports:
-     - "8085:8080"
-    volumes:
-     - ./item-service:/app
-     - ~/.m2:/root/.m2
-    depends_on:
-     - service-discovery
-    networks:
-     - app-network
+      - app-network
+
   user-service:
     build:
       context: ./user-service
     container_name: user-service
     ports:
-     - "8086:8080"
-    volumes:
-     - ./user-service:/app
-     - ~/.m2:/root/.m2
+      - "8086:8080"
     depends_on:
-     - service-discovery
+      - service-discovery
+      - rabbitmq
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/userdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_RABBITMQ_HOST: rabbitmq
     networks:
-     - app-network
+      - app-network
+
+  events-service:
+    build:
+      context: ./events-service
+    container_name: events-service
+    ports:
+      - "8081:8080"
+    depends_on:
+      - service-discovery
+      - rabbitmq
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/eventdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_RABBITMQ_HOST: rabbitmq
+    networks:
+      - app-network
+
+  guest-service:
+    build:
+      context: ./guest-service
+    container_name: guest-service
+    ports:
+      - "8082:8080"
+    depends_on:
+      - service-discovery
+      - rabbitmq
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/guestdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_RABBITMQ_HOST: rabbitmq
+    networks:
+      - app-network
+
+  item-service:
+    build:
+      context: ./item-service
+    container_name: item-service
+    ports:
+      - "8085:8080"
+    depends_on:
+      - service-discovery
+      - rabbitmq
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/itemdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_RABBITMQ_HOST: rabbitmq
+    networks:
+      - app-network
+
   notification-service:
     build:
       context: ./notification-service
     container_name: notification-service
     ports:
-     - "8087:8080"
-    volumes:
-     - ./notification-service:/app
-     - ~/.m2:/root/.m2
+      - "8087:8080"
     depends_on:
-     - service-discovery
+      - service-discovery
+      - rabbitmq
+    environment:
+      SPRING_RABBITMQ_HOST: rabbitmq
     networks:
-     - app-network
+      - app-network
+
   auth-service:
     build:
       context: ./auth-service
     container_name: auth-service
     ports:
-     - "8084:8080"
-    volumes:
-     - ./auth-service:/app
-     - ~/.m2:/root/.m2
+      - "8084:8080"
     depends_on:
-     - service-discovery
+      - service-discovery
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/authdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
     networks:
-     - app-network
+      - app-network
+
   gateway-service:
     build:
       context: ./gateway-service
     container_name: gateway-service
     ports:
-     - "8083:8080"
-    volumes:
-     - ./gateway-service:/app
-     - ~/.m2:/root/.m2
+      - "8083:8080"
     depends_on:
-     - service-discovery
+      - service-discovery
     networks:
-     - app-network
+      - app-network
+
   nginx:
     image: nginx:latest
     container_name: nginx
     ports:
-     - "80:80"
+      - "80:80"
     volumes:
-     - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
-     - gateway-service
+      - gateway-service
     networks:
-     - app-network
+      - app-network
+
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  postgres_data:

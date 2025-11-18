@@ -12,9 +12,8 @@ import lombok.Setter;
 @AllArgsConstructor
 public class UpdateUserRequestDTO {
     
-    private String name;  // Opcional
+    private String name;
     
     @Email(message = "Email inválido")
-    private String email;  // Opcional, mas se preenchido deve ser válido
+    private String email;
 }
-

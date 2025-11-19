@@ -21,6 +21,30 @@ services:
     networks:
       - app-network
 
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - app-network
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+
   auth-service:
     build:
       context: ./auth-service
@@ -29,6 +53,8 @@ services:
       - "8084:8080"
     depends_on:
       - service-discovery
+      - rabbitmq
+      - postgres
     networks:
       - app-network
 
@@ -40,6 +66,8 @@ services:
       - "8086:8080"
     depends_on:
       - service-discovery
+      - rabbitmq
+      - postgres
     networks:
       - app-network
 
@@ -51,6 +79,8 @@ services:
       - "8081:8080"
     depends_on:
       - service-discovery
+      - rabbitmq
+      - postgres
     networks:
       - app-network
 
@@ -62,6 +92,8 @@ services:
       - "8082:8080"
     depends_on:
       - service-discovery
+      - rabbitmq
+      - postgres
     networks:
       - app-network
 
@@ -73,6 +105,8 @@ services:
       - "8085:8080"
     depends_on:
       - service-discovery
+      - rabbitmq
+      - postgres
     networks:
       - app-network
 
@@ -84,6 +118,8 @@ services:
       - "8087:8080"
     depends_on:
       - service-discovery
+      - rabbitmq
+      - postgres
     networks:
       - app-network
 
@@ -102,3 +138,6 @@ services:
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  pgdata:

@@ -1,7 +1,9 @@
-package com.example.userservice.messaging;
+package com.example.userservice.adapter.in.messaging;
 
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
+
+import com.example.userservice.messaging.RabbitConfig;
 
 @Service
 public class UserEventPublisher {

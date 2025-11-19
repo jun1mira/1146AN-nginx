@@ -1,15 +1,13 @@
-package com.example.userservice.usecases;
+package com.example.userservice.application.service;
 
-import com.example.userservice.domain.User;
-import com.example.userservice.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 
 @Service
-public class UsuarioService {
+public class UserService {
 
     private final UsuarioRepository repository;
 
-    public UsuarioService(UsuarioRepository repository) {
+    public UserService(UsuarioRepository repository) {
         this.repository = repository;
     }
 

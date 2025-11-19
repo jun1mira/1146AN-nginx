@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -41,5 +42,11 @@ public class JpaUserRepository implements UserRepository {
     @Override
     public Page<User> findAll(Pageable pageable) {
         return jpa.findAll(pageable);
+    }
+
+    @Override
+    public List<org.springframework.security.core.userdetails.User> findAll() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'findAll'");
     }
 }

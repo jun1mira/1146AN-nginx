@@ -34,34 +34,29 @@ public class UserController {
     public ResponseEntity<UserResponseDTO> createUser(
             @Valid @RequestBody CreateUserRequestDTO request
     ) {
-        // Converter DTO para entidade User
+
         User user = new User();
         user.setName(request.getName());
         user.setEmailAdress(EmailAdress.of(request.getEmail()));
         user.setPassword(Password.of(request.getPassword()));
 
-        // Chamar caso de uso
         User createdUser = createUserUseCase.execute(user);
 
-        // Converter User para UserResponseDTO
         UserResponseDTO response = toResponseDTO(createdUser);
 
-        // Retornar resposta 201 Created
         URI location = URI.create("/api/users/" + createdUser.getUserId());
         return ResponseEntity.created(location).body(response);
     }
 
     @GetMapping
     public ResponseEntity<List<UserResponseDTO>> listUsers() {
-        // Chamar caso de uso
+
         List<User> users = listUsersUseCase.execute();
 
-        // Converter List<User> para List<UserResponseDTO>
         List<UserResponseDTO> responses = users.stream()
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
 
-        // Retornar resposta 200 OK
         return ResponseEntity.ok(responses);
     }
 
@@ -69,15 +64,13 @@ public class UserController {
     public ResponseEntity<UserResponseDTO> getUserById(
             @PathVariable UUID userId
     ) {
-        // Chamar caso de uso para buscar por ID
-        // Nota: A implementação exata dependerá de como Pedro implementar os casos de uso
-        // Pode ser: listUsersUseCase.findById(userId) ou um caso de uso separado GetUserByIdUseCase
+
         User user = listUsersUseCase.findById(userId);
 
-        // Converter User para UserResponseDTO
+
         UserResponseDTO response = toResponseDTO(user);
 
-        // Retornar resposta 200 OK
+
         return ResponseEntity.ok(response);
     }
 
@@ -86,13 +79,11 @@ public class UserController {
             @PathVariable UUID userId,
             @Valid @RequestBody UpdateUserRequestDTO request
     ) {
-        // Chamar caso de uso
+
         User updatedUser = updateUserUseCase.execute(userId, request);
 
-        // Converter User para UserResponseDTO
         UserResponseDTO response = toResponseDTO(updatedUser);
 
-        // Retornar resposta 200 OK
         return ResponseEntity.ok(response);
     }
 
@@ -100,16 +91,12 @@ public class UserController {
     public ResponseEntity<Void> deleteUser(
             @PathVariable UUID userId
     ) {
-        // Chamar caso de uso
+
         deleteUserUseCase.execute(userId);
 
-        // Retornar resposta 204 No Content
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Método auxiliar para converter User (domínio) para UserResponseDTO
-     */
     private UserResponseDTO toResponseDTO(User user) {
         UserResponseDTO dto = new UserResponseDTO();
         dto.setUserId(user.getUserId());
@@ -119,4 +106,3 @@ public class UserController {
         return dto;
     }
 }
-

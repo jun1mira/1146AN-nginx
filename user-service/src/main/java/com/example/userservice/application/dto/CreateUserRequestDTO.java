@@ -23,4 +23,3 @@ public class CreateUserRequestDTO {
     @NotBlank(message = "A senha é obrigatória")
     private String password;
 }
-
